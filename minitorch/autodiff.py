@@ -1,19 +1,13 @@
 variable_count = 1
 
 
-# ## Module 1
-
-# Variable is the main class for autodifferentiation logic for scalars
-# and tensors.
-
-
 class Variable:
     """
     Attributes:
         history (:class:`History` or None) : the Function calls that created this variable or None if constant
         derivative (variable type): the derivative with respect to this variable
-        grad (variable type) : alias for derivative, used for tensors
-        name (string) : a globally unique name of the variable
+        grad (variable type) : alias for derivative (PyTorch name)
+        name (string) : an optional name for debugging
     """
 
     def __init__(self, history, name=None):
@@ -32,6 +26,7 @@ class Variable:
             self.name = name
         else:
             self.name = self.unique_id
+
         self.used = 0
 
     def requires_grad_(self, val):
@@ -66,6 +61,7 @@ class Variable:
         "True if this variable created by the user (no `last_fn`)"
         return self.history.last_fn is None
 
+    ## IGNORE
     def accumulate_derivative(self, val):
         """
         Add `val` to the the derivative accumulated on this variable.
@@ -107,9 +103,6 @@ class Variable:
         return 0.0
 
 
-# Some helper functions for handling optional tuples.
-
-
 def wrap_tuple(x):
     "Turn a possible value into a tuple"
     if isinstance(x, tuple):
@@ -124,9 +117,6 @@ def unwrap_tuple(x):
     return x
 
 
-# Classes for Functions.
-
-
 class Context:
     """
     Context class is used by `Function` to store information during the forward pass.
@@ -134,7 +124,8 @@ class Context:
     Attributes:
         no_grad (bool) : do not save gradient information
         saved_values (tuple) : tuple of values saved for backward pass
-        saved_tensors (tuple) : alias for saved_values
+        saved_tensors (tuple) : alias for saved_values (PyTorch name)
+
     """
 
     def __init__(self, no_grad=False):
@@ -190,7 +181,7 @@ class History:
         Returns:
             list of numbers : a derivative with respect to `inputs`
         """
-        raise NotImplementedError('Need to include this file from past assignment.')
+        return self.last_fn.chain_rule(self.ctx, self.inputs, d_output)
 
 
 class FunctionBase:
@@ -204,30 +195,10 @@ class FunctionBase:
 
     @staticmethod
     def variable(raw, history):
-        # Implement by children class.
         raise NotImplementedError()
 
-    @classmethod
+    @classmethod #注意此处为classmethod，不需要实例化，相当于把一组函数封装到一个类当中。
     def apply(cls, *vals):
-        """
-        Apply is called by the user to run the Function.
-        Internally it does three things:
-
-        a) Creates a Context for the function call.
-        b) Calls forward to run the function.
-        c) Attaches the Context to the History of the new variable.
-
-        There is a bit of internal complexity in our implementation
-        to handle both scalars and tensors.
-
-        Args:
-            vals (list of Variables or constants) : The arguments to forward
-
-        Returns:
-            `Variable` : The new variable produced
-
-        """
-        # Go through the variables to see if any needs grad.
         raw_vals = []
         need_grad = False
         for v in vals:
@@ -238,22 +209,16 @@ class FunctionBase:
                 raw_vals.append(v.get_data())
             else:
                 raw_vals.append(v)
-
-        # Create the context.
         ctx = Context(not need_grad)
-
-        # Call forward with the variables.
         c = cls.forward(ctx, *raw_vals)
         assert isinstance(c, cls.data_type), "Expected return typ %s got %s" % (
             cls.data_type,
             type(c),
         )
-
-        # Create a new variable from the result with a new history.
         back = None
         if need_grad:
-            back = History(cls, ctx, vals)
-        return cls.variable(cls.data(c), back)
+            back = History(cls, ctx, vals)#运算符、保留值和值
+        return cls.variable(cls.data(c), back)#新建varable。
 
     @classmethod
     def chain_rule(cls, ctx, inputs, d_output):
@@ -266,47 +231,66 @@ class FunctionBase:
             d_output (number) : The `d_output` value in the chain rule.
 
         Returns:
-            list of (`Variable`, number) : A list of non-constant variables with their derivatives
+            list of (`Variable`, number) A list of non-constant variables with their derivatives
             (see `is_constant` to remove unneeded variables)
 
         """
-        # Tip: Note when implementing this function that
-        # cls.backward may return either a value or a tuple.
-        raise NotImplementedError('Need to include this file from past assignment.')
-
-
-# Algorithms for backpropagation
+        # TODO: Implement for Task 1.3.
+        # raise NotImplementedError('Need to implement for Task 1.3')
+        ans=[]
+        grad_list=wrap_tuple(cls.backward(ctx,d_output))
+        for index in range(len(inputs)):
+            if not is_constant(inputs[index]):
+                ans.append((inputs[index],grad_list[index]))
+        return ans
+        #存疑
 
 
 def is_constant(val):
     return not isinstance(val, Variable) or val.history is None
 
 
-def topological_sort(variable):
-    """
-    Computes the topological order of the computation graph.
+def topological_sort(variable): # DFS实现Topological Sort
+    "Returns nodes in topological order"
+    order = []
+    seen = set()
 
-    Args:
-        variable (:class:`Variable`): The right-most variable
+    def visit(var):
+        if var.unique_id in seen:
+            return
+        if not var.is_leaf():
+            for m in var.history.inputs:
+                if not is_constant(m):
+                    visit(m)
+        seen.add(var.unique_id)
+        order.insert(0, var)
 
-    Returns:
-        list of Variables : Non-constant Variables in topological order
-                            starting from the right.
-    """
-    raise NotImplementedError('Need to include this file from past assignment.')
+    visit(variable)
+    return order
 
 
 def backpropagate(variable, deriv):
     """
-    Runs backpropagation on the computation graph in order to
-    compute derivatives for the leave nodes.
+    Runs a breadth-first search on the computation graph in order to
+    backpropagate derivatives to the leaves.
 
     See :doc:`backpropagate` for details on the algorithm.
 
     Args:
-        variable (:class:`Variable`): The right-most variable
+        variable (:class:`Variable`): The final variable
         deriv (number) : Its derivative that we want to propagate backward to the leaves.
 
-    No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
+    No return. Should write to its results to the derivative values of each leaf.
     """
-    raise NotImplementedError('Need to include this file from past assignment.')
+    # TODO: Implement for Task 1.4.
+    variable_queue=topological_sort(variable=variable)
+    v_d_dict=dict(zip(list(map(lambda x:x.name,variable_queue)),[0 for i in range(len(variable_queue))]))
+    v_d_dict[variable.name]=deriv
+    for variable in variable_queue:
+        if variable.is_leaf():#遍历到叶子节点之前由于拓扑排序，其梯度积累已经完成。
+            variable.accumulate_derivative(v_d_dict[variable.name])
+        else:
+            for father_variable,father_deriv in variable.history.backprop_step(v_d_dict[variable.name]):
+                v_d_dict[father_variable.name]+=father_deriv
+
+    # raise NotImplementedError('Need to implement for Task 1.4')

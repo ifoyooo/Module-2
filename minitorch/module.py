@@ -21,11 +21,23 @@ class Module:
 
     def train(self):
         "Set the mode of this module and all descendent modules to `train`."
-        raise NotImplementedError('Need to include this file from past assignment.')
+        # TODO: Implement for Task 0.4.
+        def train_recursion(module):
+            module.training=True
+            for submodule in module.modules():
+                train_recursion(submodule)
+        train_recursion(self)
+        # raise NotImplementedError('Need to implement for Task 0.4')
 
     def eval(self):
         "Set the mode of this module and all descendent modules to `eval`."
-        raise NotImplementedError('Need to include this file from past assignment.')
+        # TODO: Implement for Task 0.4.
+        def eval_recursion(module):
+            module.training=False
+            for submodule in module.modules():
+                eval_recursion(submodule)
+        eval_recursion(self)
+        # raise NotImplementedError('Need to implement for Task 0.4')
 
     def named_parameters(self):
         """
@@ -35,11 +47,26 @@ class Module:
         Returns:
             list of pairs: Contains the name and :class:`Parameter` of each ancestor parameter.
         """
-        raise NotImplementedError('Need to include this file from past assignment.')
+        # TODO: Implement for Task 0.4.
+
+        ans=[]
+        def named_parameters_recursion(module,prefix):
+            tmp=prefix + '.' if prefix else ''
+            for name,value in module.__dict__["_parameters"].items():
+                ans.append((tmp+name,value))
+            for name,submodule in module.__dict__["_modules"].items():
+                prefix=tmp+name
+                named_parameters_recursion(submodule,prefix)
+        named_parameters_recursion(self,'')
+        return ans
+        # raise NotImplementedError('Need to implement for Task 0.4')
 
     def parameters(self):
         "Enumerate over all the parameters of this module and its descendents."
-        raise NotImplementedError('Need to include this file from past assignment.')
+        # TODO: Implement for Task 0.4.
+
+        return list(map(lambda x: x[1],self.named_parameters()))
+        # raise NotImplementedError('Need to implement for Task 0.4')
 
     def add_parameter(self, k, v):
         """
@@ -56,7 +83,7 @@ class Module:
         self.__dict__["_parameters"][k] = val
         return val
 
-    def __setattr__(self, key, val):
+    def __setattr__(self, key, val):#每次类的实例进行属性赋值都会调用该函数。
         if isinstance(val, Parameter):
             self.__dict__["_parameters"][key] = val
         elif isinstance(val, Module):
@@ -64,7 +91,7 @@ class Module:
         else:
             super().__setattr__(key, val)
 
-    def __getattr__(self, key):
+    def __getattr__(self, key):#当使用某个不存在的属性时，如module.a,a不是其中的属性就会将a作为参数执行该函数。
         if key in self.__dict__["_parameters"]:
             return self.__dict__["_parameters"][key]
 
@@ -77,7 +104,7 @@ class Module:
     def forward(self):
         assert False, "Not Implemented"
 
-    def __repr__(self):
+    def __repr__(self):#用于自定义对象的输出信息
         def _addindent(s_, numSpaces):
             s = s_.split("\n")
             if len(s) == 1:

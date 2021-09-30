@@ -1,4 +1,6 @@
 import random
+
+from numpy.core.fromnumeric import sort
 from .operators import prod
 from numpy import array, float64, ndarray
 import numba
@@ -23,9 +25,9 @@ def index_to_position(index, strides):
     Returns:
         int : position in storage
     """
-
+    return sum([i*s for i,s in zip(index,strides)])
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError('Need to implement for Task 2.1')
+    # raise NotImplementedError('Need to implement for Task 2.1')
 
 
 def to_index(ordinal, shape, out_index):
@@ -45,7 +47,13 @@ def to_index(ordinal, shape, out_index):
 
     """
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError('Need to implement for Task 2.1')
+    # TODO:REWRITE
+    strides=strides_from_shape(shape)
+    for i in range(len(strides)-1):
+        out_index[i]=ordinal//strides[i]
+        ordinal-=out_index[i]*strides[i]
+    out_index[-1]=ordinal%shape[-1]
+    # raise NotImplementedError('Need to implement for Task 2.1')
 
 
 def broadcast_index(big_index, big_shape, shape, out_index):
@@ -105,6 +113,7 @@ class TensorData:
 
         if strides is None:
             strides = strides_from_shape(shape)
+            # assert 0, f"strides{strides}"
 
         assert isinstance(strides, tuple), "Strides must be tuple"
         assert isinstance(shape, tuple), "Shape must be tuple"
@@ -157,7 +166,7 @@ class TensorData:
 
         # Call fast indexing.
         return index_to_position(array(index), self._strides)
-
+    #TODO:READ
     def indices(self):
         lshape = array(self.shape)
         out_index = array(self.shape)
@@ -190,9 +199,12 @@ class TensorData:
         assert list(sorted(order)) == list(
             range(len(self.shape))
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
-
+        
+        #permute并没有改变storge，但是改变了strides，太妙了。
+        #reshape也不改变storge，但是不改变strides。
+        return TensorData(self._storage,tuple([self.shape[i] for i in order]),tuple([self.strides[i] for i in order]))
         # TODO: Implement for Task 2.1.
-        raise NotImplementedError('Need to implement for Task 2.1')
+        # raise NotImplementedError('Need to implement for Task 2.1')
 
     def to_string(self):
         s = ""
