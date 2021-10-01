@@ -231,7 +231,7 @@ def tensor_reduce(fn):
                 a_pos=index_to_position(a_index,a_strides)
                 out[out_pos]=fn(out[out_pos],a_storage[a_pos])
 
-
+    #注意我们reduce的实现实际上会保留一的维度。
         # raise NotImplementedError('Need to implement for Task 2.2')
 
     return _reduce

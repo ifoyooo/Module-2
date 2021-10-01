@@ -69,7 +69,7 @@ class Tensor(Variable):
         return b
 
     # Functions
-    def __add__(self, b):
+    def __add__(self, b): #__radd__右+，__iadd__ +=操作
         return self.backend.Add.apply(self, self._ensure_tensor(b))
 
     def __sub__(self, b):
@@ -209,6 +209,9 @@ class Tensor(Variable):
             if orig_shape[dim] == 1 and shape != 1: #然后遇到1就把这个维度sum掉
                 out = self.backend._add_reduce(out, dim)
         assert out.size == self.size, f"{out.shape} {self.shape}"
+
+        #add by wfy : to delete the extra dim since add_reduce doesn't delete them.
+        out=Tensor.make(out._tensor._storage, self.shape, backend=self.backend)
         return out
 
     def zeros(self, shape=None):

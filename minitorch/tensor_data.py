@@ -146,7 +146,7 @@ class TensorData:
         self.dims = len(strides)
         self.size = int(prod(shape))
         self.shape = shape
-        assert len(self._storage) == self.size
+        assert len(self._storage) == self.size,f" len of storage:{len(self._storage)},size:{self.size}"
 
     def to_cuda_(self):  # pragma: no cover
         if not numba.cuda.is_cuda_array(self._storage):

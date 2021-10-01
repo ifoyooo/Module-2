@@ -22,6 +22,9 @@ class Network(minitorch.Module):
 
     def forward(self, x):
         # TODO: Implement for Task 2.5.
+        x=self.layer1(x).relu()
+        x=self.layer2(x).relu()
+        return self.layer3(x).sigmoid()
         raise NotImplementedError('Need to implement for Task 2.5')
 
 
@@ -32,9 +35,17 @@ class Linear(minitorch.Module):
         self.bias = RParam(out_size)
         self.out_size = out_size
 
-    def forward(self, x):
+    def forward(self, x): # X(N,2)
         # TODO: Implement for Task 2.5.
-        raise NotImplementedError('Need to implement for Task 2.5')
+        # print(x.shape)
+        x=x.view(*x.shape,1)
+        x=(x*self.weights.value).sum(1)
+        x=x.view(x.shape[0],x.shape[2])
+        return x+self.bias.value
+
+        #return (self.weights.value)@x+self.bias.value # 还没实现矩阵乘法。。。
+        #在pytorch当中parameter可以和tensor运算，但是在这里必须用params当中地value与tensor运算。
+        # raise NotImplementedError('Need to implement for Task 2.5')
 
 
 def default_log_fn(epoch, total_loss, correct, losses):
@@ -89,7 +100,9 @@ class TensorTrain:
 
 if __name__ == "__main__":
     PTS = 50
-    HIDDEN = 2
+    HIDDEN = 10
     RATE = 0.5
     data = minitorch.datasets["Simple"](PTS)
     TensorTrain(HIDDEN).train(data, RATE)
+
+#写functionals最简单的方式就是直接return a.function()
