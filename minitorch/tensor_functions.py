@@ -92,11 +92,13 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
         class Add(Function): #? 如果两个输入的shape是不一样的?他们的grad应该也不一样？为什么不考虑？
             @staticmethod
             def forward(ctx, t1, t2):
+                ctx.save_for_backward(t1,t2)
                 return add_zip(t1, t2)
 
             @staticmethod
             def backward(ctx, grad_output):
-                return grad_output, grad_output
+                t1,t2=ctx.saved_values
+                return t1.expand(grad_output), t2.expand(grad_output)
 
         class Mul(Function):
             @staticmethod
@@ -110,7 +112,7 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             def backward(ctx, grad_output):
                 # TODO: Implement for Task 2.4.
                 a,b=ctx.saved_values
-                return mul_zip(b,grad_output),mul_zip(a,grad_output)
+                return a.expand(mul_zip(b,grad_output)),b.expand(mul_zip(a,grad_output))
                 # raise NotImplementedError('Need to implement for Task 2.4')
 
         class Sigmoid(Function):

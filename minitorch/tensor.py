@@ -204,9 +204,9 @@ class Tensor(Variable):
 
         # Case 3: Still different, reduce extra dims.
         out = buf
-        orig_shape = [1] * (len(out.shape) - len(self.shape)) + list(self.shape)
-        for dim, shape in enumerate(out.shape):
-            if orig_shape[dim] == 1 and shape != 1:
+        orig_shape = [1] * (len(out.shape) - len(self.shape)) + list(self.shape) # 首先左侧补全
+        for dim, shape in enumerate(out.shape): 
+            if orig_shape[dim] == 1 and shape != 1: #然后遇到1就把这个维度sum掉
                 out = self.backend._add_reduce(out, dim)
         assert out.size == self.size, f"{out.shape} {self.shape}"
         return out
