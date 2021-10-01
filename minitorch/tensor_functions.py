@@ -98,7 +98,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a, b):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return mul_zip(a,b)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -109,7 +110,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return sigmoid_map(a)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -120,7 +122,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return relu_map(a)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -131,7 +134,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return log_map(a)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -142,7 +146,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return exp_map(a)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -184,7 +189,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a, b):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return lt_zip(a,b)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -195,7 +201,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a, b):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return eq_zip(a,b)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
             @staticmethod
             def backward(ctx, grad_output):
@@ -206,7 +213,8 @@ def make_tensor_backend(tensor_ops, is_cuda=False):
             @staticmethod
             def forward(ctx, a, b):
                 # TODO: Implement for Task 2.3.
-                raise NotImplementedError('Need to implement for Task 2.3')
+                return is_close_zip(a,b)
+                # raise NotImplementedError('Need to implement for Task 2.3')
 
         class Permute(Function):
             @staticmethod
@@ -289,7 +297,7 @@ def rand(shape, backend=TensorFunctions, requires_grad=False):
 
     Args:
         shape (tuple): shape of tensor
-        backend (:class:`Backend`): tensor backend
+        backend (:class:`Backend`): tensor backend #用于指定Tensor的运算符号。
         requires_grad (bool): turn on autodifferentiation
 
     Returns:

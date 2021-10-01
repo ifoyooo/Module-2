@@ -40,11 +40,19 @@ def tensor_map(fn):
 
     def _map(out, out_shape, out_strides, in_storage, in_shape, in_strides):
         # TODO: Implement for Task 2.2.
-        raise NotImplementedError('Need to implement for Task 2.2')
+        out_index=np.array(out_shape)#等价于copy
+        in_index=np.array(in_shape)
+        for i in range(len(out)):
+            to_index(i,out_shape,out_index) # 获得在某个continous下的out_index
+            broadcast_index(out_index,out_shape,in_shape,in_index) #转化到某个continous下的in_index
+            out[index_to_position(out_index,out_strides)]=fn(in_storage[index_to_position(in_index,in_strides)])#找到对应的strides下的position.
+        return out
+
+        # raise NotImplementedError('Need to implement for Task 2.2')
 
     return _map
 
-
+#high order function 输入函数，输出函数。
 def map(fn):
     """
     Higher-order tensor map function ::
@@ -83,7 +91,7 @@ def map(fn):
         f(*out.tuple(), *a.tuple())
         return out
 
-    return ret
+    return ret 
 
 
 def tensor_zip(fn):
@@ -131,7 +139,18 @@ def tensor_zip(fn):
         b_strides,
     ):
         # TODO: Implement for Task 2.2.
-        raise NotImplementedError('Need to implement for Task 2.2')
+        out_index=np.array(out_shape)
+        a_index=np.array(a_shape)
+        b_index=np.array(b_shape)
+        for i in range(len(out)):
+            to_index(i,out_shape,out_index)
+            broadcast_index(out_index,out_shape,a_shape,a_index)
+            broadcast_index(out_index,out_shape,b_shape,b_index)
+            out[index_to_position(out_index,out_strides)]=fn(
+                a_storage[index_to_position(a_index,a_strides)],
+                b_storage[index_to_position(b_index,b_strides)]
+                )
+        # raise NotImplementedError('Need to implement for Task 2.2')
 
     return _zip
 
@@ -199,10 +218,21 @@ def tensor_reduce(fn):
     Returns:
         None : Fills in `out`
     """
-
+    #对每个元素、算出自己的索引，再领用reduce的特性，找到所有对应的a中的索引，进而找到a_stroge当中的位置，fn reduce即可。
     def _reduce(out, out_shape, out_strides, a_storage, a_shape, a_strides, reduce_dim):
         # TODO: Implement for Task 2.2.
-        raise NotImplementedError('Need to implement for Task 2.2')
+        out_index=np.array(out_shape)
+        for i in range(len(out)):
+            to_index(i,out_shape,out_index)
+            for j in range(a_shape[reduce_dim]):
+                a_index=np.array(out_index)
+                a_index[reduce_dim]=j
+                out_pos=index_to_position(out_index,out_strides)
+                a_pos=index_to_position(a_index,a_strides)
+                out[out_pos]=fn(out[out_pos],a_storage[a_pos])
+
+
+        # raise NotImplementedError('Need to implement for Task 2.2')
 
     return _reduce
 
@@ -247,6 +277,7 @@ def reduce(fn, start=0.0):
     return ret
 
 
+# 相当于类属函数
 class TensorOps:
     map = map
     zip = zip

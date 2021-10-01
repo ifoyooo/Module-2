@@ -74,7 +74,12 @@ def broadcast_index(big_index, big_shape, shape, out_index):
         None : Fills in `out_index`.
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError('Need to implement for Task 2.2')
+    # shape can become bigshape through broadcasting.
+    for i in range(len(shape)):
+        offset=i+len(big_shape)-len(shape)
+        out_index[i]=big_index[offset] if shape[i]!=1 else 0
+
+    # raise NotImplementedError('Need to implement for Task 2.2')
 
 
 def shape_broadcast(shape1, shape2):
@@ -92,7 +97,23 @@ def shape_broadcast(shape1, shape2):
         IndexingError : if cannot broadcast
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError('Need to implement for Task 2.2')
+    shortshape,longshape=sorted([list(shape1),list(shape2)],key=len)
+    llen,slen=len(longshape),len(shortshape)
+    shortshape=[1 for i in range(llen-slen)]+shortshape
+
+    ans=[]
+    for  i in range(llen):
+        s_value,l_value=shortshape[i],longshape[i]
+        if s_value==1:
+            ans.append(l_value)
+        elif l_value==1:
+            ans.append(s_value)
+        elif s_value==l_value:
+            ans.append(l_value)
+        else:
+            raise IndexingError("can't broadcasting")
+    return tuple(ans)
+    # raise NotImplementedError('Need to implement for Task 2.2')
 
 
 def strides_from_shape(shape):
@@ -172,7 +193,7 @@ class TensorData:
         out_index = array(self.shape)
         for i in range(self.size):
             to_index(i, lshape, out_index)
-            yield tuple(out_index)
+            yield tuple(out_index)        
 
     def sample(self):
         return tuple((random.randint(0, s - 1) for s in self.shape))
@@ -184,7 +205,7 @@ class TensorData:
         self._storage[self.index(key)] = val
 
     def tuple(self):
-        return (self._storage, self._shape, self._strides)
+        return (self._storage, self._shape, self._strides) #返回tensor的各项信息。
 
     def permute(self, *order):
         """
