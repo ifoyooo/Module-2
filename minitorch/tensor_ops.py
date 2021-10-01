@@ -181,7 +181,7 @@ def zip(fn):
         b (:class:`TensorData`): tensor to zip over
 
     Returns:
-        :class:`TensorData` : new tensor data
+        :class:`TensorData` : new tensor 
     """
 
     f = tensor_zip(fn)
@@ -258,7 +258,7 @@ def reduce(fn, start=0.0):
         dim (int): int of dim to reduce
 
     Returns:
-        :class:`TensorData` : new tensor
+        :class:`TensorData` : new tensor data
     """
 
     f = tensor_reduce(fn)
